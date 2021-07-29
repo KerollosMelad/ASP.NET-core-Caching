@@ -107,6 +107,24 @@ namespace Caching.Controllers
 
         #endregion
 
+        #region Response Caching Middleware
+        [HttpGet]
+        [ResponseCache(NoStore = false, Duration = 50, Location = ResponseCacheLocation.Any)]
+        public IEnumerable<WeatherForecast> GetWithResponseCachingMiddleware()
+        {
+            if (!_cache.TryGetValue(WEATHER_FORECAST_LIST, out WeatherForecast[] cacheEntry))
+            {
+                cacheEntry = GetWeatherForecastData();
+                _cache.Set(WEATHER_FORECAST_LIST,
+                           cacheEntry,
+                           new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(60))  // if not access again in 3 sec it will be removed
+                           );
+            }
+
+            return cacheEntry;
+        } 
+        #endregion
+
         private WeatherForecast[] GetWeatherForecastData()
         {
             var rng = new Random();

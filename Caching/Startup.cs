@@ -28,8 +28,18 @@ namespace Caching
         {
 
             services.AddControllers();
-
             services.AddMemoryCache();
+
+            // Response Caching Middleware
+            services.AddResponseCaching(options =>
+            {
+                // Each response cannot be more than 1 KB 
+                options.MaximumBodySize = 1024;
+
+                // Case Sensitive Paths 
+                // Responses to be returned only if case sensitive paths match
+                options.UseCaseSensitivePaths = true;
+            });
 
             services.AddSwaggerGen(c =>
             {
@@ -50,6 +60,12 @@ namespace Caching
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            // CORS Should be before Response Caching 
+            app.UseCors();
+
+            // Response Caching Middleware
+            app.UseResponseCaching();
 
             app.UseAuthorization();
 
